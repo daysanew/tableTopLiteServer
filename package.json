@@ -1,0 +1,23 @@
+{
+  "name": "tableTopLiteServer",
+  "version": "1.0.0",
+  "keywords": [
+    "util",
+    "functional",
+    "server",
+    "client",
+    "browser"
+  ],
+  "author": "Chuck",
+  "contributors": [],
+  "dependencies": {
+    "3": "^1.0.1",
+    "body-parser": "^1.15.2",
+    "cors": "^2.8.1",
+    "sqlite": "^2.2.0",
+    "sqlite3": "^3.1.4"
+  },
+  "devDependencies": {
+    "express": "^4.14.0"
+  }
+}
