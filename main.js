@@ -5,7 +5,7 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var app = express();
 var dao = require('./DataAccess/Dao');
-
+var endpoints = require('./Endpoints/Endpoints');
 app.use(cors());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -24,24 +24,7 @@ passport.deserializeUser(function (user, done) {
 });
 //END SPIKE CODE
 
-app.get('/story/:storyId', function (req, res) {
-
-});
-
-app.get('/character/:characterName', function (req, res) {
-    var name = req.params.characterName;
-    var character = dao.getCharacterByName(name, function (character) {
-        res.setHeader('Content-Type', 'application/json');
-        console.log("-----------------");
-        console.log(character);
-        res.send(character);
-    });
-});
-
-app.post('/character', function (req, res) {
-    var character = req.body;
-    dao.insertNewCharacter(character);
-});
+endpoints.setRoutes(app, dao);
 
 app.listen(3000, function () {
     setup();
