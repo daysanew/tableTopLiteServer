@@ -24,7 +24,7 @@ exports.setRoutes = function (app, dao) {
         dao.insertNewCharacter(character);
     });
 
-    app.get('/storyHistory', function (req, res) {
+    app.get('/storyHistory/:adventureId', function (req, res) {
         var adventureId = req.params.adventureId;
         dao.getStoryHistoryByAdventureId(adventureId, function (storyHistory) {
             res.setHeader('Content-Type', 'application/json');

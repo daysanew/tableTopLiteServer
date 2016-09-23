@@ -39,7 +39,7 @@ exports.getStoryById = function(id, callback){
 
 exports.getStoryHistoryByAdventureId = function(id, callback){
         db.serialize(function () {
-        db.get("SELECT storyHistory FROM storyHistory WHERE adventureID = ?", [id], function (err, row) {
+        db.get("SELECT id, storyHistory FROM storyHistory WHERE adventureID = ?", [id], function (err, row) {
             var storyHistory = '';
             if (err) {
                 console.log(err);
