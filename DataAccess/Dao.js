@@ -4,6 +4,18 @@ var exists = fs.existsSync(file);
 var sqlite3 = require("sqlite3").verbose();
 var db = '';
 
+getGameTurnByStoryAndAdventureId = function (storyId, adventureId, callback) {
+    db.serialize(function () {
+        db.all("SELECT id, characterId, tookTurn FROM gameTurn WHERE storyId = ? AND adventureId = ?", [storyId, adventureId], function (err, rows) {
+            if (err) {
+                console.log(err);
+            }
+
+            callback(rows);
+        });
+    });
+};
+
 exports.insertNewCharacter = function (character) {
     db.serialize(function () {
         db.run("INSERT INTO character (character, name) VALUES (?, ?)", JSON.stringify(character), character.name);
@@ -12,7 +24,7 @@ exports.insertNewCharacter = function (character) {
 
 exports.getCharacterByName = function (name, callback) {
     db.serialize(function () {
-        db.get("SELECT character FROM character WHERE name = ?", [name], function (err, row) {
+        db.get("SELECT id, character FROM character WHERE name = ?", [name], function (err, row) {
             var character = {};
             if (err) {
                 console.log(err);
@@ -24,10 +36,9 @@ exports.getCharacterByName = function (name, callback) {
     });
 };
 
-exports.getStoryById = function(id, callback){
+exports.getStoryById = function (id, callback) {
     db.serialize(function () {
         db.get("SELECT story FROM story WHERE id = ?", [id], function (err, row) {
-            var story = {};
             if (err) {
                 console.log(err);
             }
@@ -37,14 +48,13 @@ exports.getStoryById = function(id, callback){
     });
 };
 
-exports.getStoryHistoryByAdventureId = function(id, callback){
-        db.serialize(function () {
-        db.get("SELECT id, storyHistory FROM storyHistory WHERE adventureID = ?", [id], function (err, row) {
-            var storyHistory = '';
+exports.getStoryHistoryByAdventureId = function (id, callback) {
+    db.serialize(function () {
+        db.get("SELECT id, adventureID, storyHistory FROM storyHistory WHERE adventureID = ?", [id], function (err, row) {
             if (err) {
                 console.log(err);
             }
-            
+
             callback(row);
         });
     });
@@ -52,14 +62,37 @@ exports.getStoryHistoryByAdventureId = function(id, callback){
 
 exports.insertNewStoryHistory = function (adventureID, storyHitory) {
     db.serialize(function () {
-        db.run("INSERT INTO storyHistory (adventureID, storyHitory) VALUES (?, ?)", adventureID, storyHitory);
+        db.run("INSERT INTO storyHistory (adventureID, storyHistory) VALUES (?, ?)", adventureID, storyHitory);
     });
 };
 
 exports.updatetoryHistory = function (adventureID, storyHitory) {
     db.serialize(function () {
-        db.run("UPDATE storyHistory SET storyHitory = ? WHERE adventureID = ? ", storyHitory, adventureID);
+        db.run("UPDATE storyHistory SET storyHistory = ? WHERE adventureID = ? ", storyHitory, adventureID);
     });
+};
+
+exports.getGameTurnByStoryAndAdventureId = getGameTurnByStoryAndAdventureId;
+
+exports.checkIfAllCharactersTookTurn = function(adventureId, storyId, callback){
+    getGameTurnByStoryAndAdventureId(storyId, adventureId, function(results){
+        var allTurnsTaken = true;
+        console.log(results);
+        results.forEach(function(item){
+            if(!item.tookTurn){
+                allTurnsTaken = false;
+                return;
+            }
+        });
+        
+        callback(allTurnsTaken);
+    });
+};
+
+exports.updateGameTurnByCharacter = function (storyId, characterId, adventureID) {
+    db.serialize(function () {
+         db.run("UPDATE gameTurn SET tookTurn = 1 WHERE storyId = ? AND characterId = ? AND adventureId = ?", storyId, characterId, adventureID);
+     });
 };
 
 exports.setupDB = function () {
@@ -73,12 +106,13 @@ exports.setupDB = function () {
     if (!exists) {
         db.serialize(function () {
             db.run("CREATE TABLE character (id INTEGER PRIMARY KEY AUTOINCREMENT, character TEXT, player INT, name TEXT)");
-            db.run("CREATE TABLE adventure ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+            db.run("CREATE TABLE adventure (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
             db.run("CREATE TABLE player (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
             db.run("CREATE TABLE story (id INTEGER PRIMARY KEY AUTOINCREMENT, story TEXT)");
             db.run("CREATE TABLE adventurePlayers (adventureId INT, playerId INT)");
             db.run("CREATE TABLE adventureStories (adventureId INT, storyId INT)");
-            db.run("CREATE TABLE `storyHistory` ( id INTEGER PRIMARY KEY AUTOINCREMENT, adventureID INTEGER UNIQUE, storyHistory TEXT )");
+            db.run("CREATE TABLE storyHistory (id INTEGER PRIMARY KEY AUTOINCREMENT, adventureID INTEGER UNIQUE, storyHistory TEXT)");
+            db.run("CREATE TABLE GameTurn (id INTEGER PRIMARY KEY AUTOINCREMENT, characterId INTEGER NOT NULL, storyId INTEGER NOT NULL, tookTurn INTEGER, adventureId INTEGER NOT NULL)");
         });
     }
 };

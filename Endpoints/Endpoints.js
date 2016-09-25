@@ -1,12 +1,31 @@
 exports.setRoutes = function (app, dao) {
-    app.get('/story/:storyId', function (req, res) {
-        var id = req.params.storyId;
-        dao.getStoryById(id, function (story) {
-            res.setHeader('Content-Type', 'application/json');
-            console.log("------STORY-----------");
-            console.log(story);
-            res.send(story);
-        });
+    app.get('/story/:storyId/:adventureId/:characterId/:turn', function (req, res) {
+        var storyId = req.params.storyId;
+        var characterId = req.params.characterId;
+        var adventureId = req.params.adventureId;
+        var turn = req.params.turn;
+        console.log("turn: " + turn);
+        if (turn === 'false') {
+            console.log("------STORY WITH NO TURN-----------");
+            dao.getStoryById(storyId, function (story) {
+                res.setHeader('Content-Type', 'application/json');
+                console.log(story);
+                res.send(story);
+            });
+        } else {
+            dao.updateGameTurnByCharacter(storyId, characterId, adventureId);
+            dao.checkIfAllCharactersTookTurn(adventureId, storyId, function (allTurnsTaken) {
+                console.log("All Turns Taken: " + allTurnsTaken);
+                if (allTurnsTaken) {
+                    dao.getStoryById(storyId, function (story) {
+                        res.setHeader('Content-Type', 'application/json');
+                        console.log("------STORY WITH TURN-----------");
+                        console.log(story);
+                        res.send(story);
+                    });
+                }
+            });
+        }
     });
 
     app.get('/character/:characterName', function (req, res) {
@@ -32,6 +51,15 @@ exports.setRoutes = function (app, dao) {
             console.log(storyHistory);
             res.send(storyHistory);
         });
+    });
+    app.post('/storyHistory/', function (req, res) {
+        var storyHistory = req.body;
+
+        if (storyHistory.id) {
+            dao.updatetoryHistory(storyHistory.id, storyHistory.storyHistory);
+        } else {
+            dao.insertNew(storyHistory.adventureId, storyHistory.storyHistory);
+        }
     });
 };
 
