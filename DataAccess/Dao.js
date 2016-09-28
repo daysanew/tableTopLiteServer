@@ -95,6 +95,16 @@ exports.updateGameTurnByCharacter = function (storyId, characterId, adventureID)
      });
 };
 
+exports.insertNewAdventure = function(adventureName, adventureDescription, callback){
+    db.serialize(function(){
+        console.log("Adventure name: " + adventureName + " Description: " + adventureDescription);
+        db.run("INSERT INTO adventure (name, description) VALUES (?, ?)", [adventureName, adventureDescription], function(){
+            console.log(this);
+           callback(this.lastID); 
+        });
+    });
+};
+
 exports.setupDB = function () {
     if (!exists) {
         console.log("Creating DB file.");
@@ -106,7 +116,7 @@ exports.setupDB = function () {
     if (!exists) {
         db.serialize(function () {
             db.run("CREATE TABLE character (id INTEGER PRIMARY KEY AUTOINCREMENT, character TEXT, player INT, name TEXT)");
-            db.run("CREATE TABLE adventure (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+            db.run("CREATE TABLE adventure (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT)");
             db.run("CREATE TABLE player (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
             db.run("CREATE TABLE story (id INTEGER PRIMARY KEY AUTOINCREMENT, story TEXT)");
             db.run("CREATE TABLE adventurePlayers (adventureId INT, playerId INT)");
