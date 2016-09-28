@@ -52,7 +52,7 @@ exports.setRoutes = function (app, dao) {
             res.send(storyHistory);
         });
     });
-    
+
     app.post('/storyHistory/', function (req, res) {
         var storyHistory = req.body;
 
@@ -62,14 +62,18 @@ exports.setRoutes = function (app, dao) {
             dao.insertNew(storyHistory.adventureId, storyHistory.storyHistory);
         }
     });
-    
-    app.post('/adventure/', function(req, res){
-       var adventure = req.body;
-       
-       dao.insertNewAdventure(adventure.name, adventure.description, function(id){
-           console.log("Adventure ID: " + id);
-           res.status(200).send({id: id});
-       });
+
+    app.post('/adventure/', function (req, res) {
+        var adventure = req.body;
+
+        if (adventure.id) {
+            dao.updateAdventure(adventure.name, adventure.description, adventure.id)
+        } else {
+            dao.insertNewAdventure(adventure.name, adventure.description, function (id) {
+                console.log("Adventure ID: " + id);
+                res.status(200).send({id: id});
+            });
+        }
     });
 };
 

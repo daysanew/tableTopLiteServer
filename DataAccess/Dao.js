@@ -105,6 +105,13 @@ exports.insertNewAdventure = function(adventureName, adventureDescription, callb
     });
 };
 
+exports.updateAdventure = function(adventureName, adventureDescription, adventureId){
+    db.serialize(function(){
+        console.log("Adventure name: " + adventureName + " Description: " + adventureDescription);
+        db.run("UPDATE adventure SET name = ?, description = ? WHERE id = ?", [adventureName, adventureDescription, adventureId]);
+    });
+};
+
 exports.setupDB = function () {
     if (!exists) {
         console.log("Creating DB file.");
