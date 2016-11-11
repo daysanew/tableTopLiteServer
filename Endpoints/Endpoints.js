@@ -75,5 +75,15 @@ exports.setRoutes = function (app, dao) {
             });
         }
     });
+    
+    app.get('/adventure/:adventureId', function (req, res) {
+        var adventureId = req.params.adventureId;
+        dao.getAdventureById(adventureId, function (adventure) {
+            res.setHeader('Content-Type', 'application/json');
+            console.log("--------adventure---------");
+            console.log(adventure);
+            res.send(adventure);
+        });
+    });
 };
 

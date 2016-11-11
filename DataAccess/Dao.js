@@ -74,41 +74,51 @@ exports.updatetoryHistory = function (adventureID, storyHitory) {
 
 exports.getGameTurnByStoryAndAdventureId = getGameTurnByStoryAndAdventureId;
 
-exports.checkIfAllCharactersTookTurn = function(adventureId, storyId, callback){
-    getGameTurnByStoryAndAdventureId(storyId, adventureId, function(results){
+exports.checkIfAllCharactersTookTurn = function (adventureId, storyId, callback) {
+    getGameTurnByStoryAndAdventureId(storyId, adventureId, function (results) {
         var allTurnsTaken = true;
         console.log(results);
-        results.forEach(function(item){
-            if(!item.tookTurn){
+        results.forEach(function (item) {
+            if (!item.tookTurn) {
                 allTurnsTaken = false;
                 return;
             }
         });
-        
+
         callback(allTurnsTaken);
     });
 };
 
 exports.updateGameTurnByCharacter = function (storyId, characterId, adventureID) {
     db.serialize(function () {
-         db.run("UPDATE gameTurn SET tookTurn = 1 WHERE storyId = ? AND characterId = ? AND adventureId = ?", storyId, characterId, adventureID);
-     });
+        db.run("UPDATE gameTurn SET tookTurn = 1 WHERE storyId = ? AND characterId = ? AND adventureId = ?", storyId, characterId, adventureID);
+    });
 };
 
-exports.insertNewAdventure = function(adventureName, adventureDescription, callback){
-    db.serialize(function(){
+exports.insertNewAdventure = function (adventureName, adventureDescription, callback) {
+    db.serialize(function () {
         console.log("Adventure name: " + adventureName + " Description: " + adventureDescription);
-        db.run("INSERT INTO adventure (name, description) VALUES (?, ?)", [adventureName, adventureDescription], function(){
+        db.run("INSERT INTO adventure (name, description) VALUES (?, ?)", [adventureName, adventureDescription], function () {
             console.log(this);
-           callback(this.lastID); 
+            callback(this.lastID);
         });
     });
 };
 
-exports.updateAdventure = function(adventureName, adventureDescription, adventureId){
-    db.serialize(function(){
+exports.updateAdventure = function (adventureName, adventureDescription, adventureId) {
+    db.serialize(function () {
         console.log("Adventure name: " + adventureName + " Description: " + adventureDescription);
         db.run("UPDATE adventure SET name = ?, description = ? WHERE id = ?", [adventureName, adventureDescription, adventureId]);
+    });
+};
+
+exports.getAdventureById = function (adventureId, callback) {
+    db.serialize(function () {
+        db.run("SELECT * FROM adventure JOIN adventureStories ON adventure.id = adventureStories.adventureId " +
+                "JOIN story ON story.id = adventureStories.storyId " +
+                "WHERE adventure.Id = ?", [adventureId], function (err, row) {
+            callback(row);
+        });
     });
 };
 
